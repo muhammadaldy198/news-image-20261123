@@ -6,6 +6,11 @@ Checks, all offline and deterministic:
   2. gate limits — entry.png is 1024x1024 and <= 1 MiB;
   3. content sanity — grayscale mean/stddev/dark-fraction in sane bands,
      and the 300px downscale still carries signal (thumbnail test);
+     NOTE (v3, 24 Nov 2026): the mean band is 175–245, recalibrated from
+     200–245 because v3's hero art is deliberately dark night scenes
+     (14% of the page at mean ~45). The band still catches a broken
+     render (a blacked page scores <100); the dark-fraction cap 0.25 is
+     the binding guard against a dark poster.
   4. overlap — the text boxes draw.py logged (DRAW_LOG=1) must not
      intersect (strict area overlap);
   5. data integrity — 39 stories numbered 1..39, Top 10 ranks 1..10,
@@ -71,7 +76,7 @@ def main():
     mean, std = st.mean[0], st.stddev[0]
     hist = g.histogram()
     dark_frac = sum(hist[:80]) / (1024 * 1024)
-    check("grayscale mean in paper band", 200 <= mean <= 245,
+    check("grayscale mean in paper band", 175 <= mean <= 245,
           f"mean {mean:.1f}")
     check("grayscale stddev shows content", std > 35, f"stddev {std:.1f}")
     check("dark-pixel fraction sane", 0.02 <= dark_frac <= 0.25,
