@@ -1,32 +1,54 @@
-// news-image-20261123 — "THE WORLD, Monday 23 November 2026".
+// main.ts — entrypoint for the news-image-20261123 entry (Hunter Office,
+// Kirana). v2 resubmit: the broadsheet is pre-rendered by draw.py from the
+// verified Monday 23 November 2026 story list (stories.json) and committed
+// beside this file as entry.png; the grader has no Python or PIL, so this
+// program's only job is to copy the finished image to /output.
 //
-// The picture is entry.png, rendered before submit by draw.py (PIL) from
-// the verified 23 Nov story list in stories.json. The grader's container
-// has no Python or Pillow, so this program only copies the committed PNG
-// to the output directory. Node 22, standard library only.
+// Usage (grader):  node main.ts        → writes /output/entry.png
+// Node >= 22, stdlib only. Deterministic: one file in, one file out.
 //
-// Run locally with MAKEFUN_OUTPUT_DIR standing in for /output:
-//   mkdir -p out && MAKEFUN_OUTPUT_DIR=out node main.ts
+// Node 22 runs this file as ESM under type stripping, so the script's own
+// directory comes from import.meta.dirname (no __dirname in ESM scope).
+// v2: the committed entry.png is the 24 Nov re-render; the copy below
+// never re-draws — it only moves the finished broadsheet to /output.
 
-import { chmodSync, copyFileSync, existsSync, statSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { chmodSync, copyFileSync, existsSync, mkdirSync, statSync } from "node:fs";
+import { join } from "node:path";
 
-const here = dirname(fileURLToPath(import.meta.url));
-const src = join(here, 'entry.png');
-const outDir = process.env.MAKEFUN_OUTPUT_DIR ?? '/output';
-const dest = join(outDir, 'entry.png');
+const IMAGE = "entry.png";
+const OUT_DIR = "/output";
+const SIZE_LIMIT = 1024 * 1024;
 
-if (!existsSync(src)) {
-  throw new Error(`entry.png missing next to main.ts (${src})`);
+function sourcePath(): string {
+  return join(import.meta.dirname, IMAGE);
 }
-copyFileSync(src, dest);
-// The copied file is ours, so chmod on the file alone is safe — never
-// chmod the output directory itself (the grader runs as another user and
-// that throws EPERM).
-chmodSync(dest, 0o644);
-const bytes = statSync(dest).size;
-if (bytes === 0) {
-  throw new Error('entry.png copied but empty');
+
+function outputDir(): string {
+  const override = process.env.MAKEFUN_OUTPUT_DIR;
+  return override !== undefined && override !== "" ? override : OUT_DIR;
 }
-console.log(`entry.png -> ${dest} (${bytes} bytes)`);
+
+function destinationPath(): string {
+  return join(outputDir(), IMAGE);
+}
+
+function copyBroadsheet(): void {
+  const src = sourcePath();
+  if (!existsSync(src)) {
+    throw new Error(`missing pre-rendered image: ${src}`);
+  }
+  const bytes = statSync(src).size;
+  if (bytes === 0 || bytes > SIZE_LIMIT) {
+    throw new Error(`entry.png has an unexpected size: ${bytes} bytes`);
+  }
+  const dest = destinationPath();
+  mkdirSync(outputDir(), { recursive: true });
+  copyFileSync(src, dest);
+  // Make the copy world-readable so the grader can open it. Only the
+  // file gets a mode change: touching the output directory's own mode
+  // breaks under the grader's user (EPERM), so leave the directory alone.
+  chmodSync(dest, 0o644);
+  console.log(`entry.png -> ${dest} (${bytes} bytes)`);
+}
+
+copyBroadsheet();
