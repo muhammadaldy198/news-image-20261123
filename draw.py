@@ -3,16 +3,24 @@
 
 Renders a 1024x1024 broadsheet front page ("THE WORLD — Monday, 23 November
 2026") with PIL, from the verified 23 Nov 2026 story list in stories.json
-(39 stories, 32 STRONG, 7 regions). The PNG is committed beside this script;
+(39 stories, 7 regions). The PNG is committed beside this script;
 main.ts only copies it.
+
+v2 (24 Nov 2026): resubmit after v1's R2 #1,638/9,643. Same architecture,
+deeper stories — NATO's AWACS outcome, the verified market closes (Nasdaq
++6.5%, Nvidia +31%, drawn as a code-drawn bar chart), the UK politics
+block (Burnham/Farage/Haigh), Kim, the Ebola undercount, Bolsonaro's
+pneumonia, the Congo cobalt halt, and 8 story swaps for the weakest v1
+briefs. Every number re-verified against the Monday close.
 
 Written from scratch in this session. Layout is my own design, built from the
 office research (Nadia's verified data + Dimas's template hunt): masthead with
 ears, section strip, 3 hero panels (Merkury halftone, Cikande, Dymer), pull
-quote, pinned world map + framed numbers table, fold line, Inside-Today index
-+ Quote of the Day + Tomorrow boxes, 3 brief columns, 2 rows of illustrated
-mini-cards (every Top 10 story illustrated), UTC timeline, dark ticker strip,
-DATE CHECK box, footer. 39 stories, 12 illustration elements.
+quote, pinned world map + framed numbers table + market bar chart, fold line,
+Inside-Today index + Quote of the Day + Tomorrow boxes, 3 brief columns,
+2 rows of illustrated mini-cards (every Top 10 story illustrated), UTC
+timeline, dark ticker strip, DATE CHECK box, footer. 39 stories, 13
+illustration elements.
 
 Run:  ~/workspace/office/.venv/bin/python draw.py [out.png]
 Fonts are render-time tools only (system Noto/DejaVu); they are NOT part of
@@ -455,7 +463,8 @@ def paint_markets(draw, x, y, w, h):
               fill=(120, 220, 120), width=3)
     draw.polygon([(x + 44, y + 8), (x + 52, y + 6), (x + 50, y + 14)],
                  fill=(120, 220, 120))
-    draw.text((x + 4, y + 2), "+6.7%", font=font("sans_bold", 10),
+    # v2: verified Monday CLOSE (+6.5%), not the +6.7% midday print.
+    draw.text((x + 4, y + 2), "+6.5%", font=font("sans_bold", 10),
               fill=(120, 220, 120))
 
 
@@ -665,7 +674,10 @@ def draw_map_zone(draw, img):
                     font=font("sans_bold", 10), fill=NAVY)
     img.paste(layer, (mx, my))
     draw.rectangle([mx, my, mx + mw, my + mh], outline=RULE)
-    # --- numbers table (right, framed) ---
+    # --- numbers table (right, framed) + mini market bar chart ---
+    # v2: the table keeps its three war/disaster rows; the three market
+    # rows move into a code-drawn bar chart of Monday's verified closes
+    # (Nasdaq/S&P/Dow/Nvidia), so the close numbers read at 300px too.
     rx = 740
     draw.text((rx, 368), "BY THE NUMBERS", font=font("sans_bold", 11),
               fill=RED)
@@ -677,8 +689,21 @@ def draw_map_zone(draw, img):
                   fill=NAVY)
         draw.text((rx + 70, yy + 2), label, font=font("sans", 10), fill=INK)
         log_box(f"num{i}", rx, yy, W - 16, yy + 13)
-    draw.text((rx + 6, 464), DATA["numbers_footnote"],
-              font=font("serif_italic", 9), fill=GREY)
+    draw.line([rx + 6, 425, W - 22, 425], fill=RULE, width=1)
+    draw.text((rx + 6, 428), "MONDAY'S CLOSE — WALL STREET",
+              font=font("sans_bold", 9), fill=RED)
+    bars = DATA["market_bars"]
+    top_val = max(v for _, _, v in bars)
+    bar_x, bar_max = rx + 64, 120
+    for j, (name, pct, val) in enumerate(bars):
+        by = 439 + j * 7
+        lf = font("mono_bold", 8)
+        draw.text((rx + 6, by - 1), name, font=lf, fill=INK)
+        bw = max(4, round(bar_max * val / top_val))
+        col = RED if name == "NVIDIA" else NAVY
+        draw.rectangle([bar_x, by, bar_x + bw, by + 5], fill=col)
+        draw.text((bar_x + bw + 4, by - 1), pct, font=lf, fill=col)
+        log_box(f"bar{j}", rx, by - 1, W - 16, by + 6)
 
 
 def draw_fold(draw):
@@ -869,8 +894,8 @@ def build(out_path):
     print("regions:", region_counts(), "sum:",
           sum(region_counts().values()))
     print("headlines shrunk below 13px:", shrunk or "none")
-    print("illustration elements: 3 heroes (1 halftone) + 8 mini-cards = 11, "
-          "plus pinned map")
+    print("illustration elements: 3 heroes (1 halftone) + 8 mini-cards + "
+          "market bar chart = 12, plus pinned map")
     if os.environ.get("DRAW_LOG"):
         (BASE / "boxes.json").write_text(json.dumps(BOXES, indent=1))
         print(f"logged {len(BOXES)} text boxes to boxes.json")
