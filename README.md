@@ -4,12 +4,12 @@
 [![rank](https://make.fun/badge/news-image-20261123/muhammadaldy198/news-image-20261123/rank.svg)](https://make.fun/bounty/news-image-20261123/leaderboard?utm_source=github&utm_medium=readme&utm_campaign=news-image-20261123)
 [![reward](https://make.fun/badge/news-image-20261123/muhammadaldy198/news-image-20261123/reward.svg)](https://make.fun/bounty/news-image-20261123?utm_source=github&utm_medium=readme&utm_campaign=news-image-20261123)
 
-A broadsheet front page — "THE WORLD, Monday 23 November 2026" — summing up the day's world news in one 1024x1024 image: 39 verified stories across 7 regions (Zelensky confirms Ukraine sank the corvette Merkury at Benghazi, Cikande fire: 24 dead confirmed, 153 drones over Ukraine and the Dymer toll at 11, Nasdaq +6.7% as Nvidia brings Jensen Huang back as CEO), three illustrated hero stories (one in halftone engraving style) plus eight illustrated mini-cards covering every Top 10 story, a pinned world map with a framed numbers table, a dark ticker strip, an Inside-Today index, a Quote of the Day, a Tomorrow box, a UTC timeline, and a DATE CHECK box listing the stories deliberately left out as other days' news. The image is drawn in code by draw.py (PIL, Noto fonts, from the story data in stories.json) and shipped pre-rendered as entry.png; main.ts only copies it to /output/entry.png.
+One broadsheet front page summing up Monday 23 November 2026: 39 verified stories across 7 regions — the Merkury sinking, the Cikande factory fire, NATO's AWACS decision for Poland, and the record Wall Street close (Nasdaq +6.5%, Nvidia +31%).
 
 ## Run it
 
 ```sh
-mkdir -p out && MAKEFUN_OUTPUT_DIR=out node main.ts
+node main.ts
 ```
 
 ---
@@ -18,10 +18,8 @@ mkdir -p out && MAKEFUN_OUTPUT_DIR=out node main.ts
 
 ## The image
 
-`draw.py` renders `entry.png` (1024x1024, ~269 KB) with Pillow: masthead with ears, three illustrated hero stories (Merkury halftone, Cikande, Dymer — with drop cap and pull quote), a pinned world map with the Top 10, a framed BY THE NUMBERS table, a fold line, Inside-Today / Quote-of-the-Day / Tomorrow boxes, three headline columns, two rows of four illustrated mini-cards (8 cards: NATO, COP31, cricket, India–Nepal, 49ers, markets, Ariane 6, Jokić — every Top 10 story illustrated), a UTC timeline, a dark ticker strip, and a DATE CHECK box. All 39 stories were verified against at least two sources each as having happened or first been reported on Monday 23 November 2026; stories from other days are listed in the DATE CHECK box as deliberately excluded. To re-render:
+THE WORLD — Monday, 23 November 2026. 39 stories, 7 regions (Europe 11, Asia 7, Middle East 2, Americas 7, Africa 3, Oceania 4, World 5), drawn in code with PIL. Three hero panels (the Merkury sinking, the Cikande factory fire, the 153-drone barrage on Ukraine), a pinned world map of the Top 10 stories, a numbers table plus a bar chart of Monday's verified market closes, an Inside-Today index, a Quote of the Day (Jensen Huang, reinstated as Nvidia CEO), a UTC timeline of the day, a dark ticker strip, and a DATE CHECK box listing what was deliberately left out (other days' news, not-yet events, and corrections).
 
-```sh
-python3 draw.py entry.png
-```
+v2 changes from the first entry: market numbers corrected to the verified Monday closes (Nasdaq +6.5%, S&P +4.7%, Dow +3.0%, Nvidia +31%); the NATO council outcome (AWACS approved for Poland, Article 4 not invoked, no joint communique); a UK politics block (Burnham, Farage, Haigh); 8 story swaps for the weakest first-entry briefs (Ebola undercount, Israel talks, Kim Jong Un, DR Congo cobalt halt, Sparta II, Bolsonaro's pneumonia, and the final Belgium strike count); deeper decks on all three heroes; and an expanded DATE CHECK.
 
-`verify.py` re-renders twice and checks determinism (byte-identical SHA-256), the 1024x1024 / 1 MiB gate limits, grayscale and 300px-thumbnail signal, that no logged text box overlaps, and that the story data is complete (39 stories, Top 10 ranks 1–10, masthead date exact).
+Every story was verified against Monday 23 November 2026 reporting (Reuters, AP, CNN, AFP, BBC, Kyiv Independent, ESPNcricinfo, MIT News, Nvidia IR). The broadsheet is pre-rendered — `main.ts` only copies `entry.png` to `/output`.
